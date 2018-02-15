@@ -15,6 +15,10 @@ public class QuizActivity extends AppCompatActivity {
 
     private static final String TAG = "QuizActivity";
     private static final String KEY_INDEX = "index";
+    private static final String KEY_SCORE = "score";
+    private static final String KEY_QUESTIONSANSWERED = "questionsAnswered";
+    private static final String KEY_ISANSWERED = "isAnswered";
+    private static final String KEY_PRESSABLE = "pressable";
 
     private Button mTrueButton;
     private Button mFalseButton;
@@ -34,6 +38,8 @@ public class QuizActivity extends AppCompatActivity {
     private int mCurrentIndex = 0;
     private int score = 0;
     private int questionsAnswered = 0;
+    private boolean[] answered = new boolean[mQuestionBank.length];
+    private boolean isPressable = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,14 +47,23 @@ public class QuizActivity extends AppCompatActivity {
         Log.d(TAG, "onCreated(Bundle) called");
         setContentView(R.layout.activity_quiz);
 
+        for(int i = 0; i<answered.length; i++){
+            answered[i] = false;
+        }
+
         if(savedInstanceState != null) {
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
+            score = savedInstanceState.getInt(KEY_SCORE, 0);
+            questionsAnswered = savedInstanceState.getInt(KEY_QUESTIONSANSWERED, 0);
+            answered = savedInstanceState.getBooleanArray(KEY_ISANSWERED);
+            isPressable = savedInstanceState.getBoolean(KEY_PRESSABLE, true);
         }
 
         mQuestionTextView = findViewById(R.id.question_text_view);
         mQuestionTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mCurrentIndex = (mCurrentIndex+1)%mQuestionBank.length;
                 updateQuestion();
             }
         });
@@ -58,7 +73,7 @@ public class QuizActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 checkAnswer(true);
-                mQuestionBank[mCurrentIndex].setAnswered(true);
+                answered[mCurrentIndex] = true;
                 updateAnswerButtons();
                 checkFinished();
             }
@@ -69,7 +84,7 @@ public class QuizActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 checkAnswer(false);
-                mQuestionBank[mCurrentIndex].setAnswered(true);
+                answered[mCurrentIndex] = true;
                 updateAnswerButtons();
                 checkFinished();
             }
@@ -96,6 +111,8 @@ public class QuizActivity extends AppCompatActivity {
 //        });
 
         updateQuestion();
+        updateAnswerButtons();
+
     }
 
     @Override
@@ -121,6 +138,10 @@ public class QuizActivity extends AppCompatActivity {
         super.onSaveInstanceState(savedInstanceState);
         Log.i(TAG, "onSaveInstanceState");
         savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
+        savedInstanceState.putInt(KEY_QUESTIONSANSWERED, questionsAnswered);
+        savedInstanceState.putInt(KEY_SCORE, score);
+        savedInstanceState.putBooleanArray(KEY_ISANSWERED, answered);
+        savedInstanceState.putBoolean(KEY_PRESSABLE, isPressable);
     }
 
     @Override
@@ -141,14 +162,14 @@ public class QuizActivity extends AppCompatActivity {
     }
 
     private void updateAnswerButtons(){
-        if(mQuestionBank[mCurrentIndex].isAnswered()){
-            mTrueButton.setClickable(false);
-            mFalseButton.setClickable(false);
+        if(answered[mCurrentIndex]){
+            isPressable = false;
         }
         else {
-            mTrueButton.setClickable(true);
-            mFalseButton.setClickable(true);
+            isPressable = true;
         }
+        mTrueButton.setClickable(isPressable);
+        mFalseButton.setClickable(isPressable);
     }
 
     private void checkFinished(){
