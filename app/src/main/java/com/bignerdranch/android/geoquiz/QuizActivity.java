@@ -32,6 +32,8 @@ public class QuizActivity extends AppCompatActivity {
     };
 
     private int mCurrentIndex = 0;
+    private int score = 0;
+    private int questionsAnswered = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +41,9 @@ public class QuizActivity extends AppCompatActivity {
         Log.d(TAG, "onCreated(Bundle) called");
         setContentView(R.layout.activity_quiz);
 
-        if(savedInstanceState != null) mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
+        if(savedInstanceState != null) {
+            mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
+        }
 
         mQuestionTextView = findViewById(R.id.question_text_view);
         mQuestionTextView.setOnClickListener(new View.OnClickListener() {
@@ -54,6 +58,9 @@ public class QuizActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 checkAnswer(true);
+                mQuestionBank[mCurrentIndex].setAnswered(true);
+                updateAnswerButtons();
+                checkFinished();
             }
         });
 
@@ -62,6 +69,9 @@ public class QuizActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 checkAnswer(false);
+                mQuestionBank[mCurrentIndex].setAnswered(true);
+                updateAnswerButtons();
+                checkFinished();
             }
         });
 
@@ -71,6 +81,7 @@ public class QuizActivity extends AppCompatActivity {
             public void onClick(View view) {
                 mCurrentIndex = (mCurrentIndex+1)%mQuestionBank.length;
                 updateQuestion();
+                updateAnswerButtons();
             }
         });
 
@@ -129,14 +140,34 @@ public class QuizActivity extends AppCompatActivity {
         mQuestionTextView.setText(question);
     }
 
+    private void updateAnswerButtons(){
+        if(mQuestionBank[mCurrentIndex].isAnswered()){
+            mTrueButton.setClickable(false);
+            mFalseButton.setClickable(false);
+        }
+        else {
+            mTrueButton.setClickable(true);
+            mFalseButton.setClickable(true);
+        }
+    }
+
+    private void checkFinished(){
+        if(questionsAnswered == mQuestionBank.length){
+            Toast.makeText(QuizActivity.this, "You scored "+(int)((float)score/(float)questionsAnswered*100)+"%", Toast.LENGTH_LONG).show();
+        }
+    }
+
     private void checkAnswer(boolean userPressedTrue){
         int resId = 0;
 
         if(userPressedTrue == mQuestionBank[mCurrentIndex].isAnswerTrue()){
             resId = R.string.correct_toast;
+            score++;
+            questionsAnswered++;
         }
         else{
             resId = R.string.incorrect_toast;
+            questionsAnswered++;
         }
         Toast t = Toast.makeText(QuizActivity.this, resId, Toast.LENGTH_SHORT);
         t.setGravity(Gravity.TOP, 0, 200);
