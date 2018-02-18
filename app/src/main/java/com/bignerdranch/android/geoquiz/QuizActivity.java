@@ -94,7 +94,7 @@ public class QuizActivity extends AppCompatActivity {
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //mCurrentIndex = (mCurrentIndex+1)%mQuestionBank.length;
+                mCurrentIndex = (mCurrentIndex+1)%mQuestionBank.length;
                 updateQuestion();
                 updateAnswerButtons();
             }
@@ -107,6 +107,7 @@ public class QuizActivity extends AppCompatActivity {
                 if(mCurrentIndex == 0)mCurrentIndex = mQuestionBank.length - 1;
                 else mCurrentIndex = (mCurrentIndex-1)%mQuestionBank.length;
                 updateQuestion();
+                updateAnswerButtons();
             }
         });
 
