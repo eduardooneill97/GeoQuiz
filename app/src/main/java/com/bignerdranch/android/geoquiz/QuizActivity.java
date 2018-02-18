@@ -23,7 +23,7 @@ public class QuizActivity extends AppCompatActivity {
     private Button mTrueButton;
     private Button mFalseButton;
     private ImageButton mNextButton;
-    //private ImageButton mPreviousButton;
+    private ImageButton mPreviousButton;
     private TextView mQuestionTextView;
 
     private Question[] mQuestionBank = {
@@ -94,21 +94,21 @@ public class QuizActivity extends AppCompatActivity {
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mCurrentIndex = (mCurrentIndex+1)%mQuestionBank.length;
+                //mCurrentIndex = (mCurrentIndex+1)%mQuestionBank.length;
                 updateQuestion();
                 updateAnswerButtons();
             }
         });
 
-//        mPreviousButton = findViewById(R.id.previous_button);
-//        mPreviousButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if(mCurrentIndex == 0)mCurrentIndex = mQuestionBank.length - 1;
-//                else mCurrentIndex = (mCurrentIndex-1)%mQuestionBank.length;
-//                updateQuestion();
-//            }
-//        });
+        mPreviousButton = findViewById(R.id.previous_button);
+        mPreviousButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mCurrentIndex == 0)mCurrentIndex = mQuestionBank.length - 1;
+                else mCurrentIndex = (mCurrentIndex-1)%mQuestionBank.length;
+                updateQuestion();
+            }
+        });
 
         updateQuestion();
         updateAnswerButtons();
