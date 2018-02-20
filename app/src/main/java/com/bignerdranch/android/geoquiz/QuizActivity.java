@@ -1,7 +1,6 @@
 package com.bignerdranch.android.geoquiz;
 
 import android.content.Intent;
-import android.media.Image;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,8 +16,8 @@ public class QuizActivity extends AppCompatActivity {
     private static final String TAG = "QuizActivity";
     private static final String KEY_INDEX = "index";
     private static final String KEY_SCORE = "score";
-    private static final String KEY_QUESTIONSANSWERED = "questionsAnswered";
-    private static final String KEY_ISANSWERED = "isAnswered";
+    private static final String KEY_QUESTIONS_ANSWERED = "questionsAnswered";
+    private static final String KEY_IS_ANSWERED = "isAnswered";
     private static final String KEY_PRESSABLE = "pressable";
     private static final String KEY_IS_CHEATER = "cheater";
     private static final int REQUEST_CODE_CHEAT = 0;
@@ -63,8 +62,8 @@ public class QuizActivity extends AppCompatActivity {
         if(savedInstanceState != null) {
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
             score = savedInstanceState.getInt(KEY_SCORE, 0);
-            questionsAnswered = savedInstanceState.getInt(KEY_QUESTIONSANSWERED, 0);
-            answered = savedInstanceState.getBooleanArray(KEY_ISANSWERED);
+            questionsAnswered = savedInstanceState.getInt(KEY_QUESTIONS_ANSWERED, 0);
+            answered = savedInstanceState.getBooleanArray(KEY_IS_ANSWERED);
             isPressable = savedInstanceState.getBoolean(KEY_PRESSABLE, true);
             cheatedQuestions = savedInstanceState.getBooleanArray(KEY_IS_CHEATER);
         }
@@ -172,9 +171,9 @@ public class QuizActivity extends AppCompatActivity {
         super.onSaveInstanceState(savedInstanceState);
         Log.i(TAG, "onSaveInstanceState");
         savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
-        savedInstanceState.putInt(KEY_QUESTIONSANSWERED, questionsAnswered);
+        savedInstanceState.putInt(KEY_QUESTIONS_ANSWERED, questionsAnswered);
         savedInstanceState.putInt(KEY_SCORE, score);
-        savedInstanceState.putBooleanArray(KEY_ISANSWERED, answered);
+        savedInstanceState.putBooleanArray(KEY_IS_ANSWERED, answered);
         savedInstanceState.putBoolean(KEY_PRESSABLE, isPressable);
         savedInstanceState.putBooleanArray(KEY_IS_CHEATER, cheatedQuestions);
     }
