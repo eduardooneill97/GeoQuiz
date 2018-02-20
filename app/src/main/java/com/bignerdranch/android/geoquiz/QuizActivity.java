@@ -1,5 +1,6 @@
 package com.bignerdranch.android.geoquiz;
 
+import android.content.Intent;
 import android.media.Image;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,12 +20,15 @@ public class QuizActivity extends AppCompatActivity {
     private static final String KEY_QUESTIONSANSWERED = "questionsAnswered";
     private static final String KEY_ISANSWERED = "isAnswered";
     private static final String KEY_PRESSABLE = "pressable";
+    private static final String KEY_IS_CHEATER = "cheater";
+    private static final int REQUEST_CODE_CHEAT = 0;
 
     private Button mTrueButton;
     private Button mFalseButton;
     private ImageButton mNextButton;
     private ImageButton mPreviousButton;
     private TextView mQuestionTextView;
+    private Button mCheatButton;
 
     private Question[] mQuestionBank = {
             new Question(R.string.question_africa, false),
@@ -39,6 +43,7 @@ public class QuizActivity extends AppCompatActivity {
     private int score = 0;
     private int questionsAnswered = 0;
     private boolean[] answered = new boolean[mQuestionBank.length];
+    private boolean[] cheatedQuestions = new boolean[mQuestionBank.length];
     private boolean isPressable = true;
 
     @Override
@@ -51,13 +56,28 @@ public class QuizActivity extends AppCompatActivity {
             answered[i] = false;
         }
 
+        for(int i = 0; i<cheatedQuestions.length; i++){
+            cheatedQuestions[i] = false;
+        }
+
         if(savedInstanceState != null) {
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
             score = savedInstanceState.getInt(KEY_SCORE, 0);
             questionsAnswered = savedInstanceState.getInt(KEY_QUESTIONSANSWERED, 0);
             answered = savedInstanceState.getBooleanArray(KEY_ISANSWERED);
             isPressable = savedInstanceState.getBoolean(KEY_PRESSABLE, true);
+            cheatedQuestions = savedInstanceState.getBooleanArray(KEY_IS_CHEATER);
         }
+
+        mCheatButton = (Button) findViewById(R.id.cheat_button);
+        mCheatButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
+                Intent intent = CheatActivity.newIntent(QuizActivity.this, answerIsTrue);
+                startActivityForResult(intent, REQUEST_CODE_CHEAT);
+            }
+        });
 
         mQuestionTextView = findViewById(R.id.question_text_view);
         mQuestionTextView.setOnClickListener(new View.OnClickListener() {
@@ -117,6 +137,19 @@ public class QuizActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(resultCode != RESULT_OK){
+            return;
+        }
+        if(requestCode == REQUEST_CODE_CHEAT){
+            if(data == null){
+                return;
+            }
+            cheatedQuestions[mCurrentIndex] = CheatActivity.wasAnswerShown(data);
+        }
+    }
+
+    @Override
     public void onStart(){
         super.onStart();
         Log.d(TAG, "onStart() called");
@@ -143,6 +176,7 @@ public class QuizActivity extends AppCompatActivity {
         savedInstanceState.putInt(KEY_SCORE, score);
         savedInstanceState.putBooleanArray(KEY_ISANSWERED, answered);
         savedInstanceState.putBoolean(KEY_PRESSABLE, isPressable);
+        savedInstanceState.putBooleanArray(KEY_IS_CHEATER, cheatedQuestions);
     }
 
     @Override
@@ -182,15 +216,20 @@ public class QuizActivity extends AppCompatActivity {
     private void checkAnswer(boolean userPressedTrue){
         int resId = 0;
 
-        if(userPressedTrue == mQuestionBank[mCurrentIndex].isAnswerTrue()){
-            resId = R.string.correct_toast;
-            score++;
-            questionsAnswered++;
+        if(cheatedQuestions[mCurrentIndex]){
+            resId = R.string.judgment_toast;
+        }else {
+            if(userPressedTrue == mQuestionBank[mCurrentIndex].isAnswerTrue()){
+                resId = R.string.correct_toast;
+                score++;
+                questionsAnswered++;
+            }
+            else{
+                resId = R.string.incorrect_toast;
+                questionsAnswered++;
+            }
         }
-        else{
-            resId = R.string.incorrect_toast;
-            questionsAnswered++;
-        }
+
         Toast t = Toast.makeText(QuizActivity.this, resId, Toast.LENGTH_SHORT);
         t.setGravity(Gravity.TOP, 0, 200);
         t.show();
