@@ -1,10 +1,14 @@
 package com.bignerdranch.android.geoquiz;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewAnimationUtils;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -17,6 +21,8 @@ public class CheatActivity extends AppCompatActivity {
     private boolean mAnswerIsTrue;
     private boolean isAnswerShown;
     private TextView mAnswerTextView;
+    private TextView mAPI_Level;
+    private TextView mCheatsLeft;
     private Button mShowAnswerButton;
 
     @Override
@@ -45,8 +51,30 @@ public class CheatActivity extends AppCompatActivity {
                 }
                 isAnswerShown = true;
                 setAnswerShownResult(isAnswerShown);
+
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    int cx = mShowAnswerButton.getWidth() / 2;
+                    int cy = mShowAnswerButton.getHeight() / 2;
+                    float radius = mShowAnswerButton.getWidth();
+                    Animator anim = ViewAnimationUtils.createCircularReveal(mShowAnswerButton, cx, cy, radius, 0);
+                    anim.addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            mShowAnswerButton.setVisibility(View.INVISIBLE);
+                        }
+                    });
+                    anim.start();
+                }
+                else mShowAnswerButton.setVisibility(View.INVISIBLE);
             }
         });
+
+        mAPI_Level = findViewById(R.id.api_level_text_view);
+        mAPI_Level.setText("API Level " + Build.VERSION.SDK_INT);
+
+        mCheatsLeft = findViewById(R.id.cheats_left_text_view);
+        mCheatsLeft.setText("Cheats Left: " + QuizActivity.cheatsLeft(getIntent()));
     }
 
     @Override

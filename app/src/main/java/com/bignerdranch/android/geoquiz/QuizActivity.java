@@ -20,7 +20,9 @@ public class QuizActivity extends AppCompatActivity {
     private static final String KEY_IS_ANSWERED = "isAnswered";
     private static final String KEY_PRESSABLE = "pressable";
     private static final String KEY_IS_CHEATER = "cheater";
+    private static final String EXTRA_CHEATS_LEFT = "cheatsLeft";
     private static final int REQUEST_CODE_CHEAT = 0;
+    private static final int TOTAL_CHEATS = 3;
 
     private Button mTrueButton;
     private Button mFalseButton;
@@ -41,6 +43,7 @@ public class QuizActivity extends AppCompatActivity {
     private int mCurrentIndex = 0;
     private int score = 0;
     private int questionsAnswered = 0;
+    private int cheatsLeft = TOTAL_CHEATS;
     private boolean[] answered = new boolean[mQuestionBank.length];
     private boolean[] cheatedQuestions = new boolean[mQuestionBank.length];
     private boolean isPressable = true;
@@ -66,6 +69,7 @@ public class QuizActivity extends AppCompatActivity {
             answered = savedInstanceState.getBooleanArray(KEY_IS_ANSWERED);
             isPressable = savedInstanceState.getBoolean(KEY_PRESSABLE, true);
             cheatedQuestions = savedInstanceState.getBooleanArray(KEY_IS_CHEATER);
+            cheatsLeft = savedInstanceState.getInt(EXTRA_CHEATS_LEFT, 3);
         }
 
         mCheatButton = (Button) findViewById(R.id.cheat_button);
@@ -74,6 +78,7 @@ public class QuizActivity extends AppCompatActivity {
             public void onClick(View view) {
                 boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
                 Intent intent = CheatActivity.newIntent(QuizActivity.this, answerIsTrue);
+                intent.putExtra(EXTRA_CHEATS_LEFT, cheatsLeft);
                 startActivityForResult(intent, REQUEST_CODE_CHEAT);
             }
         });
@@ -132,6 +137,7 @@ public class QuizActivity extends AppCompatActivity {
 
         updateQuestion();
         updateAnswerButtons();
+        updateCheatButton();
 
     }
 
@@ -145,6 +151,8 @@ public class QuizActivity extends AppCompatActivity {
                 return;
             }
             cheatedQuestions[mCurrentIndex] = CheatActivity.wasAnswerShown(data);
+            if(cheatedQuestions[mCurrentIndex])cheatsLeft-=1;
+            updateCheatButton();
         }
     }
 
@@ -176,6 +184,7 @@ public class QuizActivity extends AppCompatActivity {
         savedInstanceState.putBooleanArray(KEY_IS_ANSWERED, answered);
         savedInstanceState.putBoolean(KEY_PRESSABLE, isPressable);
         savedInstanceState.putBooleanArray(KEY_IS_CHEATER, cheatedQuestions);
+        savedInstanceState.putInt(EXTRA_CHEATS_LEFT, cheatsLeft);
     }
 
     @Override
@@ -206,6 +215,10 @@ public class QuizActivity extends AppCompatActivity {
         mFalseButton.setClickable(isPressable);
     }
 
+    private void updateCheatButton(){
+        if(cheatsLeft <=0)mCheatButton.setClickable(false);
+    }
+
     private void checkFinished(){
         if(questionsAnswered == mQuestionBank.length){
             Toast.makeText(QuizActivity.this, "You scored "+(int)((float)score/(float)questionsAnswered*100)+"%", Toast.LENGTH_LONG).show();
@@ -232,5 +245,9 @@ public class QuizActivity extends AppCompatActivity {
         Toast t = Toast.makeText(QuizActivity.this, resId, Toast.LENGTH_SHORT);
         t.setGravity(Gravity.TOP, 0, 200);
         t.show();
+    }
+
+    public static int cheatsLeft(Intent data){
+        return data.getIntExtra(EXTRA_CHEATS_LEFT, TOTAL_CHEATS);
     }
 }
